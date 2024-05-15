@@ -1,21 +1,47 @@
-import pandas as pd
+import csv
 
-# Load CSV files
-df_0 = pd.read_csv("daily_sales_data_0.csv")
-df_1 = pd.read_csv("daily_sales_data_1.csv")
-df_2 = pd.read_csv("daily_sales_data_2.csv")
+# Initialize an empty list to store the combined data
+combined_data = []
 
-# Combine dataframes into one big dataframe
-df = pd.concat([df_0, df_1, df_2])
+# Function to convert price to numeric type
+def convert_price(price_str):
+    # Remove '$' sign and convert to float
+    return float(price_str.replace('$', ''))
 
-# Filter rows where product is "pink morsel"
-df = df[df['product'] == 'pink morsel']
+# Function to filter rows and calculate sales
+def process_row(row):
+    # Check if the product is "pink morsel"
+    if row[0] == 'pink morsel':
+        # Convert price to numeric type
+        price = convert_price(row[1])
+        # Calculate sales
+        sales = int(row[2]) * price
+        # Append sales, date, and region to combined_data
+        combined_data.append([sales, row[3], row[4]])
 
-# Combine quantity and price into sales
-df['sales'] = df['quantity'] * df['price']
+# Read and append data from daily_sales_data_0.csv
+with open("daily_sales_data_0.csv", newline='') as file:
+    reader = csv.reader(file)
+    next(reader)  # Skip header
+    for row in reader:
+        process_row(row)
 
-# Select required fields
-selected_df = df[['sales', 'date', 'region']]
+# Read and append data from daily_sales_data_1.csv
+with open("daily_sales_data_1.csv", newline='') as file:
+    reader = csv.reader(file)
+    next(reader)  # Skip header
+    for row in reader:
+        process_row(row)
 
-# Save to output file
-selected_df.to_csv("formatted_output.csv", index=False)
+# Read and append data from daily_sales_data_2.csv
+with open("daily_sales_data_2.csv", newline='') as file:
+    reader = csv.reader(file)
+    next(reader)  # Skip header
+    for row in reader:
+        process_row(row)
+
+# Save combined data to a new CSV file
+with open("formatted_output.csv", "w", newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(["Sales", "Date", "Region"])  # Write header
+    writer.writerows(combined_data)
